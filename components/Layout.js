@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { Box, Container, Flex, Link, Text, Button, Heading } from "theme-ui";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useState } from "react";
 
 const navLinks = [
   { href: "#ops", label: "Operations" },
@@ -38,7 +39,7 @@ const borderStripe = {
   backgroundSize: "57px 57px",
 };
 
-const MaintenanceScreen = () => (
+const MaintenanceScreen = ({ onHide }) => (
   <div style={stripeStyle}>
     <div style={stripeOverlay} />
     {/* Top border */}
@@ -101,6 +102,24 @@ const MaintenanceScreen = () => (
         </span>{" "}
         on Slack.
       </div>
+      <button
+        onClick={onHide}
+        style={{
+          marginTop: 28,
+          padding: "10px 24px",
+          background: "rgba(255,255,255,0.15)",
+          color: "#fff",
+          border: "2px solid rgba(255,255,255,0.4)",
+          borderRadius: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          fontFamily: "system-ui, sans-serif",
+          cursor: "pointer",
+          letterSpacing: "0.02em",
+        }}
+      >
+        Preview Dashboard (Dev)
+      </button>
     </div>
   </div>
 );
@@ -110,6 +129,8 @@ const Layout = ({
   title = "Boba Workshop Dashboard",
   description = "An Airtable-powered dashboard to manage Hack Club Boba Workshops.",
 }) => {
+  const [showMaintenance, setShowMaintenance] = useState(MAINTENANCE_MODE);
+
   return (
     <>
       <Head>
@@ -118,7 +139,33 @@ const Layout = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {MAINTENANCE_MODE && <MaintenanceScreen />}
+      {MAINTENANCE_MODE && showMaintenance && (
+        <MaintenanceScreen onHide={() => setShowMaintenance(false)} />
+      )}
+
+      {MAINTENANCE_MODE && !showMaintenance && (
+        <button
+          onClick={() => setShowMaintenance(true)}
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            zIndex: 9999,
+            padding: "8px 16px",
+            background: "#EC3750",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 700,
+            fontFamily: "system-ui, sans-serif",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          }}
+        >
+          🚧 Maintenance Mode
+        </button>
+      )}
 
       <Box
         sx={{
