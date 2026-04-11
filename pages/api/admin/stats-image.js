@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { ImageResponse } from "@vercel/og/dist/index.node.js";
+// Next 12 webpack respects the "default" export condition which maps to dist/index.node.js
+import { ImageResponse } from "@vercel/og";
 
 // Boba Drops logo SVG (from boba.hackclub.com)
 const LOGO_SVG = `<svg viewBox="0 0 337 154" fill="none" xmlns="http://www.w3.org/2000/svg">
