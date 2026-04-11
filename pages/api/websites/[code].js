@@ -13,6 +13,7 @@ export default async function handler(req, res) {
 
   const { code } = req.query;
   const key = process.env.AIRBRIDGE_API_KEY;
+  const airbridgeBase = process.env.DEV === "true" ? "http://localhost:5000" : "https://airbridge.hackclub.com";
 
   if (!key) {
     return res.status(500).json({ error: "Missing AIRBRIDGE_API_KEY" });
@@ -27,11 +28,11 @@ export default async function handler(req, res) {
 
     const eventSelect = encodeURIComponent(
       JSON.stringify({
-        filterByFormula: `FIND('${sanitizedCode}', ARRAYJOIN({Club Names}))`,
+        filterByFormula: `AND({Club Names} = '${sanitizedCode}', NOT({Status} = 'Rejected'))`,
         fields: ["Club Names", "Status"],
       }),
     );
-    const eventUrl = `https://airbridge.hackclub.com/v0.2/${base}/Club%20Workshops?select=${eventSelect}&authKey=${key}`;
+    const eventUrl = `${airbridgeBase}/v0.2/${base}/Club%20Workshops?select=${eventSelect}&authKey=${key}`;
 
     let eventResp;
     try {
@@ -67,19 +68,20 @@ export default async function handler(req, res) {
 
     const select = encodeURIComponent(
       JSON.stringify({
-        filterByFormula: `{club_name} = '${sanitizedCode}'`,
+        filterByFormula: `{club_name (from Active Clubs) (from Club)} = '${sanitizedCode}'`,
         fields: [
           "Email",
-          "Name",
-          "Status",
-          "club_name",
+          "First Name",
+          "Last Name",
+          "Project Status",
+          "club_name (from Active Clubs) (from Club)",
           "Playable URL",
-          "Decision Reason (to email)",
+          "Rejection Reason",
         ],
       }),
     );
 
-    const url = `https://airbridge.hackclub.com/v0.2/${base}/Websites?select=${select}&authKey=${key}`;
+    const url = `${airbridgeBase}/v0.2/${base}/Websites?select=${select}&authKey=${key}`;
 
     let resp;
     try {
@@ -130,11 +132,11 @@ export default async function handler(req, res) {
       const fields = r.fields || r;
       return {
         id: r.id || fields.id || null,
-        name: fields.Name || fields.name || "",
+        name: [fields["First Name"], fields["Last Name"]].filter(Boolean).join(" ") || fields.Name || "",
         email: fields.Email || fields.email || "",
-        status: fields.Status || fields.status || "Pending",
+        status: fields["Project Status"] || "Pending",
         website: fields["Playable URL"] || fields.website || "",
-        decisionReason: fields["Decision Reason (to email)"] || "",
+        decisionReason: fields["Rejection Reason"] || "",
       };
     });
     console.log(

@@ -10,6 +10,7 @@ export default async function handler(req, res) {
 
   const { SlackID } = req.query;
   const key = process.env.AIRBRIDGE_API_KEY;
+  const airbridgeBase = process.env.DEV === "true" ? "http://localhost:5000" : "https://airbridge.hackclub.com";
   if (!key) return res.status(500).json({ error: "Missing AIRBRIDGE_API_KEY" });
   if (!SlackID) return res.status(400).json({ error: "Missing SlackID" });
 
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
       })
     );
     const base = "Boba%20Club%20Dashboard";
-    const url = `https://airbridge.hackclub.com/v0.2/${base}/Club%20Workshops?select=${select}&authKey=${key}`;
+    const url = `${airbridgeBase}/v0.2/${base}/Club%20Workshops?select=${select}&authKey=${key}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     let resp;
